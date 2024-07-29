@@ -350,16 +350,15 @@ function getMenu() {
       },
     },
     {
-      label: 'Use Fullscreen',
-      type: 'checkbox',
-      checked: config.get('fullScreen'),
-      accelerator: 'CommandOrControl+Alt+Return',
+      label: "Use Fullscreen",
+      type: "checkbox",
+      checked: config.get("fullScreen"),
       click: () => {
         toggleFullScreen();
       },
     },
     {
-      type: 'separator',
+      label: "Enable Fullscreen Shortcut",
     },
     {
       label: `v${app.getVersion()}`,
@@ -735,9 +734,11 @@ app.whenReady().then(async () => {
     registerKeyboardShortcut();
   }
 
-  globalShortcut.register('CommandOrControl+Alt+Return', () => {
-    toggleFullScreen();
-  });
+  if (config.get("fullscreenShortcutEnabled")) {
+    globalShortcut.register("CommandOrControl+Alt+Return", () => {
+      toggleFullScreen();
+    });
+  }
 
   // disable hover for first start
   if (!config.has('currentInstance')) {
