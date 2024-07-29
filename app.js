@@ -734,7 +734,7 @@ app.whenReady().then(async () => {
     registerKeyboardShortcut();
   }
 
-  if (config.get("fullscreenShortcutEnabled")) {
+  if (config.get("shortcutFullscreenEnabled")) {
     globalShortcut.register("CommandOrControl+Alt+Return", () => {
       toggleFullScreen();
     });
