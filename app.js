@@ -359,6 +359,23 @@ function getMenu() {
     },
     {
       label: "Enable Fullscreen Shortcut",
+      type: "checkbox",
+      accelerator: "CommandOrControl+Alt+Return",
+      checked: config.get("shortcutFullscreenEnabled"),
+      click: () => {
+        const isEnabled = config.get("shortcutFullscreenEnabled");
+        config.set("shortcutFullscreenEnabled", !isEnabled);
+        if (!isEnabled) {
+          globalShortcut.register("CommandOrControl+Alt+Return", () => {
+            toggleFullScreen();
+          });
+        } else {
+          globalShortcut.unregister("CommandOrControl+Alt+Return");
+        }
+      },
+    },
+    {
+      type: "separator",
     },
     {
       label: `v${app.getVersion()}`,
