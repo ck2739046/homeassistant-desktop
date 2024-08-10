@@ -400,7 +400,7 @@ function getMenu() {
     {
       label: 'Open on github.com',
       click: async () => {
-        await shell.openExternal('https://github.com/iprodanovbg/homeassistant-desktop');
+        await shell.openExternal('https://github.com/DustyArmstrong/homeassistant-desktop');
       },
     },
     {
