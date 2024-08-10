@@ -2,9 +2,9 @@
   "name": "homeassistant-desktop",
   "repository": {
     "type": "git",
-    "url": "https://github.com/iprodanovbg/homeassistant-desktop"
+    "url": "https://github.com/FalconNL93/homeassistant-desktop"
   },
-  "version": "1.5.3",
+  "version": "1.0.0",
   "description": "Desktop App (Windows / macOS / Linux) for Home Assistant built with Electron",
   "author": "Ivan Prodanov",
   "license": "Apache-2.0",
@@ -20,22 +20,22 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "auto-launch": "^5.0.5",
-    "bonjour-service": "^1.0.14",
-    "electron-log": "^4.4.8",
-    "electron-store": "^8.1.0",
-    "electron-traywindow-positioner": "^1.1.1",
-    "electron-updater": "^4.6.5"
+    "auto-launch": "^5.0.6",
+    "bonjour-service": "^1.2.1",
+    "electron-log": "^5.1.2",
+    "electron-store": "^8.2.0",
+    "electron-traywindow-positioner": "^1.2.0",
+    "electron-updater": "^6.1.8"
   },
   "devDependencies": {
-    "electron": "21.2.0",
-    "electron-builder": "^23.0.0"
+    "electron": "^31.1.0",
+    "electron-builder": "^24.13.3"
   },
   "engines": {
     "node": ">= 16"
   },
   "build": {
-    "appId": "com.electron.homeassistant-desktop",
+    "appId": "com.electron.homeassistant-desktop-dusty",
     "artifactName": "${productName}-v${version}-${os}-${arch}.${ext}",
     "productName": "Home Assistant Desktop",
     "mac": {
