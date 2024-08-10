@@ -4,7 +4,7 @@ Desktop App (Windows / macOS / Linux) for [Home Assistant](https://www.home-assi
 
 ![Home Assistant - Desktop](https://raw.githubusercontent.com/DustyArmstrong/homeassistant-desktop/master/media/screenshot.png)
 
-This project is fork from [iprodanovbg/homeassistant-deskto](https://github.com/iprodanovbg/) and [mrvnklm/homeassistant-desktop](https://github.com/mrvnklm/)
+This project is fork from [iprodanovbg/homeassistant-desktop](https://github.com/iprodanovbg/) and [mrvnklm/homeassistant-desktop](https://github.com/mrvnklm/)
 
 ## Installation
 
