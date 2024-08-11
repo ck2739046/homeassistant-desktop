@@ -4,7 +4,13 @@ Desktop App (Windows / macOS / Linux) for [Home Assistant](https://www.home-assi
 
 ![Home Assistant - Desktop](https://raw.githubusercontent.com/DustyArmstrong/homeassistant-desktop/master/media/screenshot.png)
 
-This project is fork from [iprodanovbg/homeassistant-desktop](https://github.com/iprodanovbg/) and [mrvnklm/homeassistant-desktop](https://github.com/mrvnklm/)
+This project is fork from [iprodanovbg/homeassistant-desktop](https://github.com/iprodanovbg/) and [mrvnklm/homeassistant-desktop](https://github.com/mrvnklm/). 
+
+## Project Status
+
+The status of the project with regards to its original maintainers is unknown - the original author ([mrvnklm](https://github.com/mrvnklm/)) has seemingly deleted their repository and the most well-developed fork by [iprodanovbg](https://github.com/iprodanovbg/) has not had any meaningful updates since February 2023. Due to loss of functionality from aging dependencies I simply opted to fork the repository and make the necessary changes since I use the app every day. This fork can be maintained so long as there is a need or desire to, so pull requests to improve or fix functionality are most welcome here - this repository has merged the (at present 2) open PRs from the source and they are included in [release 1.5.4](https://github.com/DustyArmstrong/homeassistant-desktop/releases/latest).
+
+I hope this updated fork can be of some use to others if you like/liked the app!
 
 ## Installation
 
