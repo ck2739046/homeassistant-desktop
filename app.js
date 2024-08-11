@@ -1,39 +1,28 @@
-const {
-  app,
-  dialog,
-  ipcMain,
-  shell,
-  globalShortcut,
-  screen,
-  net,
-  Menu,
-  Tray,
-  BrowserWindow,
-} = require('electron');
-const { autoUpdater } = require('electron-updater');
-const AutoLaunch = require('auto-launch');
-const Positioner = require('electron-traywindow-positioner');
-const Bonjour = require('bonjour-service');
+const { app, dialog, ipcMain, shell, globalShortcut, screen, net, Menu, Tray, BrowserWindow } = require("electron");
+const { autoUpdater } = require("electron-updater");
+const AutoLaunch = require("auto-launch");
+const Positioner = require("electron-traywindow-positioner");
+const Bonjour = require("bonjour-service");
 const bonjour = new Bonjour.Bonjour();
-const logger = require('electron-log');
-const config = require('./config');
-const updateUrl = `https://update.iprodanov.com/files`;
+const logger = require("electron-log");
+const config = require("./config");
+const updateUrl = `https://update.null-url.update/files`;
 
 autoUpdater.logger = logger;
 autoUpdater.setFeedURL({
-  provider: 'generic',
+  provider: "generic",
   url: updateUrl,
 });
-logger.catchErrors();
+logger.errorHandler.startCatching();
 logger.info(`${app.name} started`);
 logger.info(`Platform: ${process.platform} ${process.arch}`);
 
 // hide dock icon on macOS
-if (process.platform === 'darwin') {
+if (process.platform === "darwin") {
   app.dock.hide();
 }
 
-const autoLauncher = new AutoLaunch({ name: 'Home Assistant Desktop' });
+const autoLauncher = new AutoLaunch({ name: "Home Assistant Desktop" });
 
 const indexFile = `file://${__dirname}/web/index.html`;
 const errorFile = `file://${__dirname}/web/error.html`;
@@ -48,7 +37,7 @@ let updateCheckerInterval;
 let availabilityCheckerInterval;
 
 function registerKeyboardShortcut() {
-  globalShortcut.register('CommandOrControl+Alt+X', () => {
+  globalShortcut.register("CommandOrControl+Alt+X", () => {
     if (mainWindow.isVisible()) {
       mainWindow.hide();
     } else {
@@ -62,18 +51,18 @@ function unregisterKeyboardShortcut() {
 }
 
 async function useAutoUpdater() {
-  autoUpdater.on('error', async (message) => {
-    logger.error('There was a problem updating the application');
+  autoUpdater.on("error", async (message) => {
+    logger.error("There was a problem updating the application");
     logger.error(message);
     clearInterval(updateCheckerInterval);
   });
 
-  autoUpdater.on('update-downloaded', () => {
+  autoUpdater.on("update-downloaded", () => {
     forceQuit = true;
     autoUpdater.quitAndInstall();
   });
 
-  if (!updateCheckerInterval && config.get('autoUpdate')) {
+  if (!updateCheckerInterval && config.get("autoUpdate")) {
     updateCheckerInterval = setInterval(checkForUpdates, 1000 * 60 * 60 * 4);
   }
 
@@ -96,7 +85,7 @@ function checkAutoStart() {
       autostartEnabled = isEnabled;
     })
     .catch((err) => {
-      logger.error('There was a problem with application auto start');
+      logger.error("There was a problem with application auto start");
       logger.error(err);
     });
 }
@@ -111,20 +100,20 @@ function availabilityCheck() {
   let url = new URL(instance);
   const request = net.request(`${url.origin}/auth/providers`);
 
-  request.on('response', async (response) => {
+  request.on("response", async (response) => {
     if (response.statusCode !== 200) {
-      logger.error('Response error: ' + response);
+      logger.error("Response error: " + response);
       await showError(true);
     }
   });
 
-  request.on('error', async (error) => {
+  request.on("error", async (error) => {
     logger.error(error);
     clearInterval(availabilityCheckerInterval);
     availabilityCheckerInterval = null;
     await showError(true);
 
-    if (config.get('automaticSwitching')) {
+    if (config.get("automaticSwitching")) {
       checkForAvailableInstance();
     }
   });
@@ -141,10 +130,10 @@ function changePosition() {
   }).workArea;
   const taskBarPosition = Positioner.getTaskbarPosition(trayBounds);
 
-  if (taskBarPosition === 'top' || taskBarPosition === 'bottom') {
+  if (taskBarPosition === "top" || taskBarPosition === "bottom") {
     const alignment = {
-      x: 'center',
-      y: taskBarPosition === 'top' ? 'up' : 'down',
+      x: "center",
+      y: taskBarPosition === "top" ? "up" : "down",
     };
 
     if (trayBounds.x + (trayBounds.width + windowBounds.width) / 2 < displayWorkArea.width) {
@@ -154,19 +143,19 @@ function changePosition() {
 
       mainWindow.setPosition(
         displayWorkArea.width - windowBounds.width + displayWorkArea.x,
-        y + (taskBarPosition === 'bottom' && displayWorkArea.y),
-        false,
+        y + (taskBarPosition === "bottom" && displayWorkArea.y),
+        false
       );
     }
   } else {
     const alignment = {
       x: taskBarPosition,
-      y: 'center',
+      y: "center",
     };
 
     if (trayBounds.y + (trayBounds.height + windowBounds.height) / 2 < displayWorkArea.height) {
       const { x, y } = Positioner.calculate(mainWindow.getBounds(), trayBounds, alignment);
-      mainWindow.setPosition(x + (taskBarPosition === 'right' && displayWorkArea.x), y);
+      mainWindow.setPosition(x + (taskBarPosition === "right" && displayWorkArea.x), y);
     } else {
       const { x } = Positioner.calculate(mainWindow.getBounds(), trayBounds, alignment);
       mainWindow.setPosition(x, displayWorkArea.y + displayWorkArea.height - windowBounds.height, false);
@@ -175,10 +164,10 @@ function changePosition() {
 }
 
 function checkForAvailableInstance() {
-  const instances = config.get('allInstances');
+  const instances = config.get("allInstances");
 
   if (instances?.length > 1) {
-    bonjour.find({ type: 'home-assistant' }, (instance) => {
+    bonjour.find({ type: "home-assistant" }, (instance) => {
       if (instance.txt.internal_url && instances.indexOf(instance.txt.internal_url) !== -1) {
         return currentInstance(instance.txt.internal_url);
       }
@@ -191,13 +180,12 @@ function checkForAvailableInstance() {
     for (let instance of instances.filter((e) => e.url !== currentInstance())) {
       const url = new URL(instance);
       const request = net.request(`${url.origin}/auth/providers`);
-      request.on('response', (response) => {
+      request.on("response", (response) => {
         if (response.statusCode === 200) {
           found = instance;
         }
       });
-      request.on('error', (_) => {
-      });
+      request.on("error", (_) => {});
       request.end();
 
       if (found) {
@@ -211,24 +199,24 @@ function checkForAvailableInstance() {
 function getMenu() {
   let instancesMenu = [
     {
-      label: 'Open in Browser',
+      label: "Open in Browser",
       enabled: currentInstance(),
       click: async () => {
         await shell.openExternal(currentInstance());
       },
     },
     {
-      type: 'separator',
+      type: "separator",
     },
   ];
 
-  const allInstances = config.get('allInstances');
+  const allInstances = config.get("allInstances");
 
   if (allInstances) {
     allInstances.forEach((e) => {
       instancesMenu.push({
         label: e,
-        type: 'checkbox',
+        type: "checkbox",
         checked: currentInstance() === e,
         click: async () => {
           currentInstance(e);
@@ -240,34 +228,34 @@ function getMenu() {
 
     instancesMenu.push(
       {
-        type: 'separator',
+        type: "separator",
       },
       {
-        label: 'Add another Instance...',
+        label: "Add another Instance...",
         click: async () => {
-          config.delete('currentInstance');
+          config.delete("currentInstance");
           await mainWindow.loadURL(indexFile);
           mainWindow.show();
         },
       },
       {
-        label: 'Automatic Switching',
-        type: 'checkbox',
-        enabled: config.has('allInstances') && config.get('allInstances').length > 1,
-        checked: config.get('automaticSwitching'),
+        label: "Automatic Switching",
+        type: "checkbox",
+        enabled: config.has("allInstances") && config.get("allInstances").length > 1,
+        checked: config.get("automaticSwitching"),
         click: () => {
-          config.set('automaticSwitching', !config.get('automaticSwitching'));
+          config.set("automaticSwitching", !config.get("automaticSwitching"));
         },
-      },
+      }
     );
   } else {
-    instancesMenu.push({ label: 'Not Connected...', enabled: false });
+    instancesMenu.push({ label: "Not Connected...", enabled: false });
   }
 
   return Menu.buildFromTemplate([
     {
-      label: 'Show/Hide Window',
-      visible: process.platform === 'linux',
+      label: "Show/Hide Window",
+      visible: process.platform === "linux",
       click: () => {
         if (mainWindow.isVisible()) {
           mainWindow.hide();
@@ -277,30 +265,30 @@ function getMenu() {
       },
     },
     {
-      visible: process.platform === 'linux',
-      type: 'separator',
+      visible: process.platform === "linux",
+      type: "separator",
     },
     ...instancesMenu,
     {
-      type: 'separator',
+      type: "separator",
     },
     {
-      label: 'Hover to Show',
-      visible: process.platform !== 'linux' && !config.get('detachedMode'),
-      enabled: !config.get('detachedMode'),
-      type: 'checkbox',
-      checked: !config.get('disableHover'),
+      label: "Hover to Show",
+      visible: process.platform !== "linux" && !config.get("detachedMode"),
+      enabled: !config.get("detachedMode"),
+      type: "checkbox",
+      checked: !config.get("disableHover"),
       click: () => {
-        config.set('disableHover', !config.get('disableHover'));
+        config.set("disableHover", !config.get("disableHover"));
       },
     },
     {
-      label: 'Stay on Top',
-      type: 'checkbox',
-      checked: config.get('stayOnTop'),
+      label: "Stay on Top",
+      type: "checkbox",
+      checked: config.get("stayOnTop"),
       click: () => {
-        config.set('stayOnTop', !config.get('stayOnTop'));
-        mainWindow.setAlwaysOnTop(config.get('stayOnTop'));
+        config.set("stayOnTop", !config.get("stayOnTop"));
+        mainWindow.setAlwaysOnTop(config.get("stayOnTop"));
 
         if (mainWindow.isAlwaysOnTop()) {
           showWindow();
@@ -308,8 +296,8 @@ function getMenu() {
       },
     },
     {
-      label: 'Start at Login',
-      type: 'checkbox',
+      label: "Start at Login",
+      type: "checkbox",
       checked: autostartEnabled,
       click: () => {
         if (autostartEnabled) {
@@ -322,14 +310,14 @@ function getMenu() {
       },
     },
     {
-      label: 'Enable Shortcut',
-      type: 'checkbox',
-      accelerator: 'CommandOrControl+Alt+X',
-      checked: config.get('shortcutEnabled'),
+      label: "Enable Shortcut",
+      type: "checkbox",
+      accelerator: "CommandOrControl+Alt+X",
+      checked: config.get("shortcutEnabled"),
       click: () => {
-        config.set('shortcutEnabled', !config.get('shortcutEnabled'));
+        config.set("shortcutEnabled", !config.get("shortcutEnabled"));
 
-        if (config.get('shortcutEnabled')) {
+        if (config.get("shortcutEnabled")) {
           registerKeyboardShortcut();
         } else {
           unregisterKeyboardShortcut();
@@ -337,16 +325,16 @@ function getMenu() {
       },
     },
     {
-      type: 'separator',
+      type: "separator",
     },
     {
-      label: 'Use detached Window',
-      type: 'checkbox',
-      checked: config.get('detachedMode'),
+      label: "Use detached Window",
+      type: "checkbox",
+      checked: config.get("detachedMode"),
       click: async () => {
-        config.set('detachedMode', !config.get('detachedMode'));
+        config.set("detachedMode", !config.get("detachedMode"));
         mainWindow.hide();
-        await createMainWindow(config.get('detachedMode'));
+        await createMainWindow(config.get("detachedMode"));
       },
     },
     {
@@ -382,12 +370,12 @@ function getMenu() {
       enabled: false,
     },
     {
-      label: 'Automatic Updates',
-      type: 'checkbox',
-      checked: config.get('autoUpdate'),
+      label: "Automatic Updates",
+      type: "checkbox",
+      checked: config.get("autoUpdate"),
       click: async () => {
-        const currentStatus = config.get('autoUpdate');
-        config.set('autoUpdate', !currentStatus);
+        const currentStatus = config.get("autoUpdate");
+        config.set("autoUpdate", !currentStatus);
 
         if (currentStatus) {
           clearInterval(updateCheckerInterval);
@@ -398,28 +386,28 @@ function getMenu() {
       },
     },
     {
-      label: 'Open on github.com',
+      label: "Open on github.com",
       click: async () => {
-        await shell.openExternal('https://github.com/DustyArmstrong/homeassistant-desktop');
+        await shell.openExternal("https://github.com/DustyArmstrong/homeassistant-desktop");
       },
     },
     {
-      type: 'separator',
+      type: "separator",
     },
     {
-      label: 'Restart Application',
+      label: "Restart Application",
       click: () => {
         app.relaunch();
         app.exit();
       },
     },
     {
-      label: '⚠️ Reset Application',
+      label: "⚠️ Reset Application",
       click: () => {
         dialog
           .showMessageBox({
-            message: 'Are you sure you want to reset Home Assistant Desktop?',
-            buttons: ['Reset Everything!', 'Reset Windows', 'Cancel'],
+            message: "Are you sure you want to reset Home Assistant Desktop?",
+            buttons: ["Reset Everything!", "Reset Windows", "Cancel"],
           })
           .then(async (res) => {
             if (res.response !== 2) {
@@ -428,11 +416,11 @@ function getMenu() {
                 await mainWindow.webContents.session.clearCache();
                 await mainWindow.webContents.session.clearStorageData();
               } else {
-                config.delete('windowSizeDetached');
-                config.delete('windowSize');
-                config.delete('windowPosition');
-                config.delete('fullScreen');
-                config.delete('detachedMode');
+                config.delete("windowSizeDetached");
+                config.delete("windowSize");
+                config.delete("windowPosition");
+                config.delete("fullScreen");
+                config.delete("detachedMode");
               }
 
               app.relaunch();
@@ -442,10 +430,10 @@ function getMenu() {
       },
     },
     {
-      type: 'separator',
+      type: "separator",
     },
     {
-      label: 'Quit',
+      label: "Quit",
       click: () => {
         forceQuit = true;
         app.quit();
@@ -455,7 +443,7 @@ function getMenu() {
 }
 
 async function createMainWindow(show = false) {
-  logger.info('Initialized main window');
+  logger.info("Initialized main window");
   mainWindow = new BrowserWindow({
     width: 420,
     height: 460,
@@ -464,7 +452,7 @@ async function createMainWindow(show = false) {
     show: false,
     skipTaskbar: !show,
     autoHideMenuBar: true,
-    frame: config.get('detachedMode') && process.platform !== 'darwin',
+    frame: config.get("detachedMode") && process.platform !== "darwin",
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
@@ -483,111 +471,111 @@ async function createMainWindow(show = false) {
   // open external links in default browser
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url);
-    return { action: 'deny' };
+    return { action: "deny" };
   });
 
   // hide scrollbar
-  mainWindow.webContents.on('did-finish-load', async function () {
-    await mainWindow.webContents.insertCSS('::-webkit-scrollbar { display: none; } body { -webkit-user-select: none; }');
+  mainWindow.webContents.on("did-finish-load", async function () {
+    await mainWindow.webContents.insertCSS("::-webkit-scrollbar { display: none; } body { -webkit-user-select: none; }");
 
-    if (config.get('detachedMode') && process.platform === 'darwin') {
-      await mainWindow.webContents.insertCSS('body { -webkit-app-region: drag; }');
+    if (config.get("detachedMode") && process.platform === "darwin") {
+      await mainWindow.webContents.insertCSS("body { -webkit-app-region: drag; }");
     }
 
     // let code = `document.addEventListener('mousemove', () => { ipcRenderer.send('mousemove'); });`;
     // mainWindow.webContents.executeJavaScript(code);
   });
 
-  if (config.get('detachedMode')) {
-    if (config.has('windowPosition')) {
-      mainWindow.setSize(...config.get('windowSizeDetached'));
+  if (config.get("detachedMode")) {
+    if (config.has("windowPosition")) {
+      mainWindow.setSize(...config.get("windowSizeDetached"));
     } else {
-      config.set('windowPosition', mainWindow.getPosition());
+      config.set("windowPosition", mainWindow.getPosition());
     }
 
-    if (config.has('windowSizeDetached')) {
-      mainWindow.setPosition(...config.get('windowPosition'));
+    if (config.has("windowSizeDetached")) {
+      mainWindow.setPosition(...config.get("windowPosition"));
     } else {
-      config.set('windowSizeDetached', mainWindow.getSize());
+      config.set("windowSizeDetached", mainWindow.getSize());
     }
-  } else if (config.has('windowSize')) {
-    mainWindow.setSize(...config.get('windowSize'));
+  } else if (config.has("windowSize")) {
+    mainWindow.setSize(...config.get("windowSize"));
   } else {
-    config.set('windowSize', mainWindow.getSize());
+    config.set("windowSize", mainWindow.getSize());
   }
 
-  mainWindow.on('resize', (e) => {
+  mainWindow.on("resize", (e) => {
     // ignore resize event when using fullscreen mode
     if (mainWindow.isFullScreen()) {
       return e;
     }
 
-    if (!config.get('disableHover') || resizeEvent) {
-      config.set('disableHover', true);
+    if (!config.get("disableHover") || resizeEvent) {
+      config.set("disableHover", true);
       resizeEvent = e;
       setTimeout(() => {
         if (resizeEvent === e) {
-          config.set('disableHover', false);
+          config.set("disableHover", false);
           resizeEvent = false;
         }
       }, 600);
     }
 
-    if (config.get('detachedMode')) {
-      config.set('windowSizeDetached', mainWindow.getSize());
+    if (config.get("detachedMode")) {
+      config.set("windowSizeDetached", mainWindow.getSize());
     } else {
-      if (process.platform !== 'linux') {
+      if (process.platform !== "linux") {
         changePosition();
       }
 
-      config.set('windowSize', mainWindow.getSize());
+      config.set("windowSize", mainWindow.getSize());
     }
   });
 
-  mainWindow.on('move', () => {
-    if (config.get('detachedMode')) {
-      config.set('windowPosition', mainWindow.getPosition());
+  mainWindow.on("move", () => {
+    if (config.get("detachedMode")) {
+      config.set("windowPosition", mainWindow.getPosition());
     }
   });
 
-  mainWindow.on('close', (e) => {
+  mainWindow.on("close", (e) => {
     if (!forceQuit) {
       mainWindow.hide();
       e.preventDefault();
     }
   });
 
-  mainWindow.on('blur', () => {
-    if (!config.get('detachedMode') && !mainWindow.isAlwaysOnTop()) {
+  mainWindow.on("blur", () => {
+    if (!config.get("detachedMode") && !mainWindow.isAlwaysOnTop()) {
       mainWindow.hide();
     }
   });
 
-  mainWindow.setAlwaysOnTop(!!config.get('stayOnTop'));
+  mainWindow.setAlwaysOnTop(!!config.get("stayOnTop"));
 
   if (initialized && (mainWindow.isAlwaysOnTop() || show)) {
     showWindow();
   }
 
-  toggleFullScreen(!!config.get('fullScreen'));
+  toggleFullScreen(!!config.get("fullScreen"));
 
   initialized = true;
 }
 
 async function reinitMainWindow() {
-  logger.info('Re-initialized main window');
+  logger.info("Re-initialized main window");
   mainWindow.destroy();
   mainWindow = null;
-  await createMainWindow(!config.has('currentInstance'));
+  await createMainWindow(!config.has("currentInstance"));
 
   if (!availabilityCheckerInterval) {
-    logger.info('Re-initialized availability check');
+    logger.info("Re-initialized availability check");
     availabilityCheckerInterval = setInterval(availabilityCheck, 3000);
   }
 }
 
 function showWindow() {
-  if (!config.get('detachedMode')) {
+  if (!config.get("detachedMode")) {
     changePosition();
   }
 
@@ -605,16 +593,16 @@ function createTray() {
     return;
   }
 
-  logger.info('Initialized Tray menu');
+  logger.info("Initialized Tray menu");
   tray = new Tray(
-    ['win32', 'linux'].includes(process.platform) ? `${__dirname}/assets/IconWin.png` : `${__dirname}/assets/IconTemplate.png`,
+    ["win32", "linux"].includes(process.platform) ? `${__dirname}/assets/IconWin.png` : `${__dirname}/assets/IconTemplate.png`
   );
 
-  tray.on('click', () => {
+  tray.on("click", () => {
     if (mainWindow.isVisible()) {
       mainWindow.hide();
 
-      if (process.platform === 'darwin') {
+      if (process.platform === "darwin") {
         app.dock.hide();
       }
     } else {
@@ -622,8 +610,8 @@ function createTray() {
     }
   });
 
-  tray.on('right-click', () => {
-    if (!config.get('detachedMode')) {
+  tray.on("right-click", () => {
+    if (!config.get("detachedMode")) {
       mainWindow.hide();
     }
 
@@ -632,8 +620,8 @@ function createTray() {
 
   let timer = undefined;
 
-  tray.on('mouse-move', () => {
-    if (config.get('detachedMode') || mainWindow.isAlwaysOnTop() || config.get('disableHover')) {
+  tray.on("mouse-move", () => {
+    if (config.get("detachedMode") || mainWindow.isAlwaysOnTop() || config.get("disableHover")) {
       return;
     }
 
@@ -667,10 +655,8 @@ function setWindowFocusTimer() {
 
     if (
       !resizeEvent &&
-      (
-        !(mousePos.x >= windowPosition[ 0 ] && mousePos.x <= windowPosition[ 0 ] + windowSize[ 0 ]) ||
-        !(mousePos.y >= windowPosition[ 1 ] && mousePos.y <= windowPosition[ 1 ] + windowSize[ 1 ])
-      )
+      (!(mousePos.x >= windowPosition[0] && mousePos.x <= windowPosition[0] + windowSize[0]) ||
+        !(mousePos.y >= windowPosition[1] && mousePos.y <= windowPosition[1] + windowSize[1]))
     ) {
       mainWindow.hide();
     } else {
@@ -680,34 +666,34 @@ function setWindowFocusTimer() {
 }
 
 function toggleFullScreen(mode = !mainWindow.isFullScreen()) {
-  config.set('fullScreen', mode);
+  config.set("fullScreen", mode);
   mainWindow.setFullScreen(mode);
 
   if (mode) {
     mainWindow.setAlwaysOnTop(true);
   } else {
-    mainWindow.setAlwaysOnTop(config.get('stayOnTop'));
+    mainWindow.setAlwaysOnTop(config.get("stayOnTop"));
   }
 }
 
 function currentInstance(url = null) {
   if (url) {
-    config.set('currentInstance', config.get('allInstances').indexOf(url));
+    config.set("currentInstance", config.get("allInstances").indexOf(url));
   }
 
-  if (config.has('currentInstance')) {
-    return config.get('allInstances')[ config.get('currentInstance') ];
+  if (config.has("currentInstance")) {
+    return config.get("allInstances")[config.get("currentInstance")];
   }
 
   return false;
 }
 
 function addInstance(url) {
-  if (!config.has('allInstances')) {
-    config.set('allInstances', []);
+  if (!config.has("allInstances")) {
+    config.set("allInstances", []);
   }
 
-  let instances = config.get('allInstances');
+  let instances = config.get("allInstances");
 
   if (instances.find((e) => e === url)) {
     currentInstance(url);
@@ -717,41 +703,41 @@ function addInstance(url) {
 
   // active hover by default after adding first instance
   if (!instances.length) {
-    config.set('disableHover', false);
+    config.set("disableHover", false);
   }
 
   instances.push(url);
-  config.set('allInstances', instances);
+  config.set("allInstances", instances);
   currentInstance(url);
 }
 
 async function showError(isError) {
-  if (!isError && mainWindow.webContents.getURL().includes('error.html')) {
+  if (!isError && mainWindow.webContents.getURL().includes("error.html")) {
     await mainWindow.loadURL(indexFile);
   }
 
-  if (isError && currentInstance() && !mainWindow.webContents.getURL().includes('error.html')) {
+  if (isError && currentInstance() && !mainWindow.webContents.getURL().includes("error.html")) {
     await mainWindow.loadURL(errorFile);
   }
 }
 
 app.whenReady().then(async () => {
-  await useAutoUpdater();
+  //await useAutoUpdater();
   checkAutoStart();
 
-  await createMainWindow(!config.has('currentInstance'));
+  await createMainWindow(!config.has("currentInstance"));
 
-  if (process.platform === 'linux') {
+  if (process.platform === "linux") {
     tray.setContextMenu(getMenu());
   }
 
   if (!availabilityCheckerInterval) {
-    logger.info('Initialized availability check');
+    logger.info("Initialized availability check");
     availabilityCheckerInterval = setInterval(availabilityCheck, 3000);
   }
 
   // register shortcut
-  if (config.get('shortcutEnabled')) {
+  if (config.get("shortcutEnabled")) {
     registerKeyboardShortcut();
   }
 
@@ -762,45 +748,45 @@ app.whenReady().then(async () => {
   }
 
   // disable hover for first start
-  if (!config.has('currentInstance')) {
-    config.set('disableHover', true);
+  if (!config.has("currentInstance")) {
+    config.set("disableHover", true);
   }
 
   // enable auto update by default
-  if (!config.has('autoUpdate')) {
-    config.set('autoUpdate', true);
+  if (!config.has("autoUpdate")) {
+    config.set("autoUpdate", true);
   }
 });
 
-app.on('will-quit', () => {
+app.on("will-quit", () => {
   unregisterKeyboardShortcut();
 });
 
-app.on('window-all-closed', () => {
+app.on("window-all-closed", () => {
   // if (process.platform !== 'darwin') {
   //   app.quit();
   // }
 });
 
-ipcMain.on('get-instances', (event) => {
-  event.reply('get-instances', config.get('allInstances') || []);
+ipcMain.on("get-instances", (event) => {
+  event.reply("get-instances", config.get("allInstances") || []);
 });
 
-ipcMain.on('ha-instance', (event, url) => {
+ipcMain.on("ha-instance", (event, url) => {
   if (url) {
     addInstance(url);
   }
 
   if (currentInstance()) {
-    event.reply('ha-instance', currentInstance());
+    event.reply("ha-instance", currentInstance());
   }
 });
 
-ipcMain.on('reconnect', async () => {
+ipcMain.on("reconnect", async () => {
   await reinitMainWindow();
 });
 
-ipcMain.on('restart', () => {
+ipcMain.on("restart", () => {
   app.relaunch();
   app.exit();
 });

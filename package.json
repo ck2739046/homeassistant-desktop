@@ -28,8 +28,11 @@
     "electron-updater": "^6.1.8"
   },
   "devDependencies": {
+    "@eslint/js": "^9.9.0",
     "electron": "^31.1.0",
-    "electron-builder": "^24.13.3"
+    "electron-builder": "^24.13.3",
+    "eslint": "^9.9.0",
+    "globals": "^15.9.0"
   },
   "engines": {
     "node": ">= 16"

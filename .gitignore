@@ -1,4 +1,5 @@
 node_modules
 dist
+eslint.config.mjs
 .idea
 .DS_Store
