@@ -1,6 +1,7 @@
-const Store = require('electron-store');
+//const Store = require('electron-store');
+import Store from 'electron-store';
 
-module.exports = new Store({
+const store = new Store({
   defaults: {
     autoUpdate: false,
     automaticSwitching: true,
@@ -13,3 +14,5 @@ module.exports = new Store({
     allInstances: [],
   },
 });
+
+export default store;

@@ -1,11 +1,18 @@
-const { app, dialog, ipcMain, shell, globalShortcut, screen, net, Menu, Tray, BrowserWindow } = require("electron");
-const { autoUpdater } = require("electron-updater");
-const AutoLaunch = require("auto-launch");
-const Positioner = require("electron-traywindow-positioner");
-const Bonjour = require("bonjour-service");
+//const { app, dialog, ipcMain, shell, globalShortcut, screen, net, Menu, Tray, BrowserWindow } = require("electron");
+import { autoUpdater, app, dialog, ipcMain, shell, globalShortcut, screen, net, Menu, Tray, BrowserWindow } from "electron";
+//const { autoUpdater } = require("electron-updater");
+//import autoUpdater from "electron-updater";
+//const AutoLaunch = require("auto-launch");
+import AutoLaunch from "auto-launch";
+//const Positioner = require("electron-traywindow-positioner");
+import Positioner from "electron-traywindow-positioner";
+//const Bonjour = require("bonjour-service");
+import Bonjour from "bonjour-service";
 const bonjour = new Bonjour.Bonjour();
-const logger = require("electron-log");
-const config = require("./config");
+//const logger = require("electron-log");
+import logger from "electron-log";
+//const config = require("./config");
+import config  from "./config.js";
 const updateUrl = `https://update.null-url.update/files`;
 
 autoUpdater.logger = logger;
@@ -24,6 +31,7 @@ if (process.platform === "darwin") {
 
 const autoLauncher = new AutoLaunch({ name: "Home Assistant Desktop" });
 
+const __dirname = import.meta.dirname;
 const indexFile = `file://${__dirname}/web/index.html`;
 const errorFile = `file://${__dirname}/web/error.html`;
 
@@ -65,8 +73,6 @@ async function useAutoUpdater() {
   if (!updateCheckerInterval && config.get("autoUpdate")) {
     updateCheckerInterval = setInterval(checkForUpdates, 1000 * 60 * 60 * 4);
   }
-
-  await checkForUpdates();
 }
 
 async function checkForUpdates() {
