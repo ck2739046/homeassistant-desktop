@@ -1,25 +1,11 @@
-//const { app, dialog, ipcMain, shell, globalShortcut, screen, net, Menu, Tray, BrowserWindow } = require("electron");
-import { autoUpdater, app, dialog, ipcMain, shell, globalShortcut, screen, net, Menu, Tray, BrowserWindow } from "electron";
-//const { autoUpdater } = require("electron-updater");
-//import autoUpdater from "electron-updater";
-//const AutoLaunch = require("auto-launch");
+import { app, dialog, ipcMain, shell, globalShortcut, screen, net, Menu, Tray, BrowserWindow } from "electron";
 import AutoLaunch from "auto-launch";
-//const Positioner = require("electron-traywindow-positioner");
 import Positioner from "electron-traywindow-positioner";
-//const Bonjour = require("bonjour-service");
 import Bonjour from "bonjour-service";
 const bonjour = new Bonjour.Bonjour();
-//const logger = require("electron-log");
 import logger from "electron-log";
-//const config = require("./config");
 import config  from "./config.js";
-const updateUrl = `https://update.null-url.update/files`;
 
-autoUpdater.logger = logger;
-autoUpdater.setFeedURL({
-  provider: "generic",
-  url: updateUrl,
-});
 logger.errorHandler.startCatching();
 logger.info(`${app.name} started`);
 logger.info(`Platform: ${process.platform} ${process.arch}`);
