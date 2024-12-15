@@ -4,7 +4,7 @@
     "type": "git",
     "url": "https://github.com/DustyArmstrong/homeassistant-desktop"
   },
-  "version": "1.5.5",
+  "version": "1.6.0",
   "description": "Desktop App (Windows / macOS / Linux) for Home Assistant built with Electron",
   "author": "Dusty Armstrong",
   "license": "Apache-2.0",
@@ -15,7 +15,7 @@
     "build-local-mac": "electron-builder build --mac --x64 --publish never",
     "build-local-mac-arm": "electron-builder build --mac --arm64 --publish never",
     "build-local-linux": "electron-builder build --linux appimage --x64 --publish never",
-    "build-local-linux-arm": "electron-builder build --linux rpm --arm64 --publish never",
+    "build-local-linux-arm": "electron-builder build --linux appimage --arm64 --publish never",
     "build-local-win": "electron-builder build --win --x64 --publish never",
     "build-local-win-arm": "electron-builder build --win --arm64 --publish never",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -33,10 +33,6 @@
     "electron": "^33.2.1",
     "electron-builder": "^25.1.8",
     "eslint": "^9.17.0",
-    "eslint-config-standard": "^17.1.0",
-    "eslint-plugin-import": "^2.31.0",
-    "eslint-plugin-n": "^17.15.0",
-    "eslint-plugin-promise": "^7.2.1",
     "globals": "^15.13.0"
   },
   "engines": {
@@ -55,6 +51,11 @@
       "extendInfo": {
         "LSUIElement": true
       }
+    },
+    "linux": {
+      "category": "public.app-category.productivity",
+      "executableName": "Home Assistant Desktop",
+      "artifactName": "${productName}-${version}.${ext}"
     }
   }
 }
