@@ -11,6 +11,7 @@ const store = new Store({
     fullScreen: false,
     shortcutEnabled: true,
     shortcutFullscreenEnabled: false,
+    userShortcut: "CommandOrControl+Shift+X",
     allInstances: [],
   },
 });

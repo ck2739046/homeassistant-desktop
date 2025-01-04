@@ -2,9 +2,9 @@ import { app, dialog, ipcMain, shell, globalShortcut, screen, net, Menu, Tray, B
 import AutoLaunch from "auto-launch";
 import Positioner from "electron-traywindow-positioner";
 import Bonjour from "bonjour-service";
-const bonjour = new Bonjour.Bonjour();
 import logger from "electron-log";
 import config  from "./config.js";
+const bonjour = new Bonjour.Bonjour();
 
 logger.errorHandler.startCatching();
 logger.info(`${app.name} started`);
@@ -27,11 +27,10 @@ let forceQuit = false;
 let resizeEvent = false;
 let mainWindow;
 let tray;
-let updateCheckerInterval;
 let availabilityCheckerInterval;
 
 function registerKeyboardShortcut() {
-  globalShortcut.register("CommandOrControl+Alt+X", () => {
+  globalShortcut.register(config.get("userShortcut"), () => {
     if (mainWindow.isVisible()) {
       mainWindow.hide();
     } else {
@@ -44,31 +43,29 @@ function unregisterKeyboardShortcut() {
   globalShortcut.unregisterAll();
 }
 
-async function useAutoUpdater() {
-  autoUpdater.on("error", async (message) => {
-    logger.error("There was a problem updating the application");
-    logger.error(message);
-    clearInterval(updateCheckerInterval);
-  });
-
-  autoUpdater.on("update-downloaded", () => {
-    forceQuit = true;
-    autoUpdater.quitAndInstall();
-  });
-
-  if (!updateCheckerInterval && config.get("autoUpdate")) {
-    updateCheckerInterval = setInterval(checkForUpdates, 1000 * 60 * 60 * 4);
-  }
-}
-
 async function checkForUpdates() {
   try {
-    await autoUpdater.checkForUpdates();
-  } catch (error) {
-    logger.error(error);
-    clearInterval(updateCheckerInterval);
+    const apiResponse = await fetch("https://api.github.com/repos/DustyArmstrong/homeassistant-desktop/releases/latest");
+    const apiData = await apiResponse.json();
+    const latestVersion = apiData.tag_name;
+    const currentVersion = app.getVersion();
+
+    if (latestVersion !== `v${currentVersion}`) {
+      const versionMessage = await dialog.showMessageBox({
+        type: "question",
+        buttons: ["Download", "Not Now"],
+        title: "Update Available",
+        message: `A new version of Home Assistant Desktop is available (${currentVersion} --> ${latestVersion})`,
+      });
+      if (versionMessage.response === 0) {
+        await shell.openExternal("https://github.com/DustyArmstrong/homeassistant-desktop/releases/latest");
+        } 
+      }
+    } catch (error) {
+      logger.error("There was a problem checking for updates");
+      logger.error(error);
+    }
   }
-}
 
 function checkAutoStart() {
   autoLauncher
@@ -302,19 +299,60 @@ function getMenu() {
       },
     },
     {
-      label: "Enable Shortcut",
-      type: "checkbox",
-      accelerator: "CommandOrControl+Alt+X",
-      checked: config.get("shortcutEnabled"),
-      click: () => {
-        config.set("shortcutEnabled", !config.get("shortcutEnabled"));
+      label: "Shortcuts",
+      submenu: [
+        {
+          label: "Select Shortcut",
+          submenu: [
+            {
+              label: "CommandOrControl+Alt+X",
+              type: "radio",
+              checked: config.get("userShortcut") === "CommandOrControl+Alt+X",
+              click: () => {
+                config.set("userShortcut", "CommandOrControl+Alt+X");
+                unregisterKeyboardShortcut();
+                registerKeyboardShortcut();
+              },
+            },
+            {
+              label: "CommandOrControl+Alt+Y",
+              type: "radio",
+              checked: config.get("userShortcut") === "CommandOrControl+Alt+Y",
+              click: () => {
+                config.set("userShortcut", "CommandOrControl+Alt+Y");
+                unregisterKeyboardShortcut();
+                registerKeyboardShortcut();
+              },
+            },
+            {
+              label: "CommandOrControl+Alt+Z",
+              type: "radio",
+              checked: config.get("userShortcut") === "CommandOrControl+Alt+Z",
+              click: () => {
+                config.set("userShortcut", "CommandOrControl+Alt+Z");
+                unregisterKeyboardShortcut();
+                registerKeyboardShortcut();
+              },
+            }
+          ]
+        },
+        {
+          label: "Enable Shortcut",
+          type: "checkbox",
+          accelerator: config.get("userShortcut"),
+          checked: config.get("shortcutEnabled"),
+          click: () => {
+            const isEnabled = config.get("shortcutEnabled");
+            config.set("shortcutEnabled", !isEnabled);
 
-        if (config.get("shortcutEnabled")) {
-          registerKeyboardShortcut();
-        } else {
-          unregisterKeyboardShortcut();
+            if (!isEnabled) {
+              registerKeyboardShortcut();
+            } else {
+              unregisterKeyboardShortcut();
+            }
+          },
         }
-      },
+      ]
     },
     {
       type: "separator",
@@ -362,19 +400,17 @@ function getMenu() {
       enabled: false,
     },
     {
-      label: "Automatic Updates",
+      label: "Check for Updates",
+      click: async () => {
+        checkForUpdates();
+      },
+    },
+    {
+      label: "Enable Update Check on Startup",
       type: "checkbox",
       checked: config.get("autoUpdate"),
       click: async () => {
-        const currentStatus = config.get("autoUpdate");
-        config.set("autoUpdate", !currentStatus);
-
-        if (currentStatus) {
-          clearInterval(updateCheckerInterval);
-          updateCheckerInterval = null;
-        } else {
-          await useAutoUpdater();
-        }
+        config.set("autoUpdate", !config.get("autoUpdate"));
       },
     },
     {
@@ -714,10 +750,14 @@ async function showError(isError) {
 }
 
 app.whenReady().then(async () => {
-  //await useAutoUpdater();
   checkAutoStart();
 
   await createMainWindow(!config.has("currentInstance"));
+
+    // update check on startup if enabled
+  if (config.get("autoUpdate") === true) {
+    checkForUpdates();
+  }
 
   if (process.platform === "linux") {
     tray.setContextMenu(getMenu());
