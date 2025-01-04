@@ -10,7 +10,7 @@ This project is fork from [iprodanovbg/homeassistant-desktop](https://github.com
 
 The status of the project with regards to its original maintainers is unknown - the original author ([mrvnklm](https://github.com/mrvnklm/)) has seemingly deleted their repository and the most well-developed fork by [iprodanovbg](https://github.com/iprodanovbg/) has not had any meaningful updates since February 2023. Due to loss of functionality from aging dependencies I simply opted to fork the repository and make the necessary changes since I use the app every day. This fork can be maintained so long as there is a need or desire to, so pull requests to improve or fix functionality are most welcome here - this repository has merged the (at present 2) open PRs from the source and they are included in [release 1.5.4](https://github.com/DustyArmstrong/homeassistant-desktop/releases/latest).
 
-I hope this updated fork can be of some use to others if you like/liked the app!
+I hope this updated fork can be of some use to others if you like/liked the app! Issues should now be open to submit if you have any, though please be aware I may not be able to resolve all issues quickly or comprehensively - though I will do my best.
 
 ## Installation
 
@@ -26,8 +26,10 @@ Just download the latest version for your platform from the [release section](ht
 - fullscreen mode (Cmd/Ctrl + Alt + Return)
 - automatic updates (if not disabled in context menu)
 
-## Notes
+## Notes & known issues
 
+- at present support for self-signed certificates is YMMV (I recommend using Let's Encrypt to resolve this, though it is something I'll try to work on)
+- support for Linux distros may vary, app tested on Debian-based flavors but detailed feedback is welcome
 - if using "detached window" on Windows, instead of dragging, you have to resize it to move it
 
 ## Contributing
