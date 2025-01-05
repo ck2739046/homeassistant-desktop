@@ -29,7 +29,8 @@ Just download the latest version for your platform from the [release section](ht
 ## Notes & known issues
 
 - at present support for self-signed certificates is YMMV (I recommend using Let's Encrypt to resolve this, though it is something I'll try to work on)
-- support for Linux distros may vary, app tested on Debian-based flavors but detailed feedback is welcome
+- support for Linux distros may vary, app tested on Debian-based flavors (XORG) but detailed feedback is welcome
+- support for Wayland is limited - the application will still run however a number of Electron's features aren't implemented yet (e.g. shortcuts, checkbox display)
 - if using "detached window" on Windows, instead of dragging, you have to resize it to move it
 
 ## Contributing
