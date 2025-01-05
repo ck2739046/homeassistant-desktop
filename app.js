@@ -33,6 +33,9 @@ function registerKeyboardShortcut() {
   globalShortcut.register(config.get("userShortcut"), () => {
     if (mainWindow.isVisible()) {
       mainWindow.hide();
+      if (process.platform === "darwin") {
+        app.dock.hide();
+      }
     } else {
       showWindow();
     }
@@ -50,7 +53,7 @@ async function checkForUpdates() {
     const latestVersion = apiData.tag_name;
     const currentVersion = app.getVersion();
 
-    if (latestVersion !== `v${currentVersion}`) {
+    if (latestVersion !== currentVersion) {
       const versionMessage = await dialog.showMessageBox({
         type: "question",
         buttons: ["Download", "Not Now"],
