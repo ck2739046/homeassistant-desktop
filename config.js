@@ -3,8 +3,9 @@ import Store from 'electron-store';
 
 const store = new Store({
   defaults: {
-    autoUpdate: false,
+    autoUpdate: true,
     automaticSwitching: true,
+    automReconnect: true,
     detachedMode: false,
     disableHover: false,
     stayOnTop: false,

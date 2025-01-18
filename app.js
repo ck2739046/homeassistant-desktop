@@ -4,7 +4,11 @@ import Positioner from "electron-traywindow-positioner";
 import Bonjour from "bonjour-service";
 import logger from "electron-log";
 import config  from "./config.js";
+import semver from "semver";
 const bonjour = new Bonjour.Bonjour();
+//scaling options for different app versions
+//app.commandLine.appendSwitch('high-dpi-support', 'true');
+//app.commandLine.appendSwitch('force-device-scale-factor', 1);
 
 logger.errorHandler.startCatching();
 logger.info(`${app.name} started`);
@@ -53,7 +57,7 @@ async function checkForUpdates() {
     const latestVersion = apiData.tag_name;
     const currentVersion = app.getVersion();
 
-    if (latestVersion !== currentVersion) {
+    if (semver.gt(latestVersion, currentVersion)) {
       const versionMessage = await dialog.showMessageBox({
         type: "question",
         buttons: ["Download", "Not Now"],
@@ -82,35 +86,81 @@ function checkAutoStart() {
     });
 }
 
-function availabilityCheck() {
+async function availabilityCheck() {
   const instance = currentInstance();
 
   if (!instance) {
-    return;
+      return;
   }
 
-  let url = new URL(instance);
-  const request = net.request(`${url.origin}/auth/providers`);
+  try {
+      const statusCode = await getResponse(instance);
+      if (statusCode !== 200) {
+          logger.error("Instance unavailable: " + statusCode);
+          clearInterval(availabilityCheckerInterval);
+          availabilityCheckerInterval = null;
+          await showError(true);
+          if (config.get("autoReconnect") === true) {
+            retryAvailabilityCheck();
+          }
+          if (config.get("automaticSwitching")) {
+              checkForAvailableInstance();
+          }
+      }
+  } catch (error) {
+      logger.error('Error during availability check:', error);
+  }
+}
 
-  request.on("response", async (response) => {
-    if (response.statusCode !== 200) {
-      logger.error("Response error: " + response);
-      await showError(true);
-    }
+async function getResponse(instance) {
+  return new Promise((resolve, reject) => {
+      let url = new URL(instance);
+      const request = net.request(`${url.origin}/auth/providers`);
+
+      request.on("response", (response) => {
+          const statusCode = response.statusCode;
+          resolve(statusCode);
+      });
+
+      request.on("error", (error) => {
+          reject(error);
+      });
+
+      request.end();
   });
+}
 
-  request.on("error", async (error) => {
-    logger.error(error);
-    clearInterval(availabilityCheckerInterval);
-    availabilityCheckerInterval = null;
-    await showError(true);
-
-    if (config.get("automaticSwitching")) {
-      checkForAvailableInstance();
-    }
-  });
-
-  request.end();
+async function retryAvailabilityCheck() {
+  const instance = currentInstance();
+  let retryCount = 0;
+  const maxRetries = 5;
+  let retryData;
+  while (retryCount <= maxRetries) {
+      try {
+          const statusCode = await getResponse(instance);
+          if (statusCode !== 200) {
+            if (retryCount === 5) {
+              logger.error(`Cannot automatically connect to instance.`);
+              retryData = "Unable to connect to instance!";
+              mainWindow.webContents.send('retry-update', retryData);
+            } else {
+              logger.error(`Instance unavailable. Retry ${retryCount}...`);
+              retryData = `Trying to reconnect ${retryCount} of ${maxRetries}`;
+              mainWindow.webContents.send('retry-update', retryData);
+              await new Promise(resolve => setTimeout(resolve, 4000));
+            }
+          } else {
+              logger.info("Automatic reconnection successful!");
+              mainWindow.webContents.send('retry-success', "Instance alive, reconnecting.");
+              await reinitMainWindow();
+          }
+      } catch (error) {
+          logger.error('Error during availability check:', error);
+          retryData = "Connection to instance failed.";
+          mainWindow.webContents.send('retry-error', retryData);
+      }
+      retryCount++;
+  }
 }
 
 function changePosition() {
@@ -414,6 +464,14 @@ function getMenu() {
       checked: config.get("autoUpdate"),
       click: async () => {
         config.set("autoUpdate", !config.get("autoUpdate"));
+      },
+    },
+    {
+      label: "Enable Automatic Reconnect",
+      type: "checkbox",
+      checked: config.get("autoReconnect"),
+      click: async () => {
+        config.set("autoReconnect", !config.get("autoReconnect"));
       },
     },
     {

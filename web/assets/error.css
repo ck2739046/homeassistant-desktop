@@ -30,6 +30,12 @@ p.error {
   color: #d06079;
 }
 
+.retry-status {
+  margin-top: 50px;
+  font-size: 18px;
+  color: #D06079;
+}
+
 @-webkit-keyframes dash {
   0% {
     stroke-dashoffset: 1000;
