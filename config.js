@@ -5,7 +5,7 @@ const store = new Store({
   defaults: {
     autoUpdate: true,
     automaticSwitching: true,
-    automReconnect: true,
+    autoReconnect: true,
     detachedMode: false,
     disableHover: false,
     stayOnTop: false,
