@@ -1,4 +1,4 @@
-import { app, dialog, ipcMain, shell, globalShortcut, screen, net, Menu, Tray, BrowserWindow } from "electron";
+import { app, dialog, ipcMain, shell, globalShortcut, screen, net, Menu, Tray, BrowserWindow, powerMonitor } from "electron";
 import AutoLaunch from "auto-launch";
 import Positioner from "electron-traywindow-positioner";
 import Bonjour from "bonjour-service";
@@ -114,7 +114,7 @@ async function availabilityCheck() {
 
 async function getResponse(instance) {
   return new Promise((resolve, reject) => {
-      let url = new URL(instance);
+      const url = new URL(instance);
       const request = net.request(`${url.origin}/auth/providers`);
 
       request.on("response", (response) => {
@@ -219,7 +219,7 @@ function checkForAvailableInstance() {
       }
     });
     let found;
-    for (let instance of instances.filter((e) => e.url !== currentInstance())) {
+    for (const instance of instances.filter((e) => e.url !== currentInstance())) {
       const url = new URL(instance);
       const request = net.request(`${url.origin}/auth/providers`);
       request.on("response", (response) => {
@@ -239,7 +239,7 @@ function checkForAvailableInstance() {
 }
 
 function getMenu() {
-  let instancesMenu = [
+  const instancesMenu = [
     {
       label: "Open in Browser",
       enabled: currentInstance(),
@@ -723,8 +723,8 @@ function createTray() {
     }
 
     timer = setTimeout(() => {
-      let mousePos = screen.getCursorScreenPoint();
-      let trayBounds = tray.getBounds();
+      const mousePos = screen.getCursorScreenPoint();
+      const trayBounds = tray.getBounds();
 
       if (
         !(mousePos.x >= trayBounds.x && mousePos.x <= trayBounds.x + trayBounds.width) ||
@@ -738,9 +738,9 @@ function createTray() {
 
 function setWindowFocusTimer() {
   setTimeout(() => {
-    let mousePos = screen.getCursorScreenPoint();
-    let windowPosition = mainWindow.getPosition();
-    let windowSize = mainWindow.getSize();
+    const mousePos = screen.getCursorScreenPoint();
+    const windowPosition = mainWindow.getPosition();
+    const windowSize = mainWindow.getSize();
 
     if (
       !resizeEvent &&
@@ -782,7 +782,7 @@ function addInstance(url) {
     config.set("allInstances", []);
   }
 
-  let instances = config.get("allInstances");
+  const instances = config.get("allInstances");
 
   if (instances.find((e) => e === url)) {
     currentInstance(url);
@@ -859,6 +859,16 @@ app.on("window-all-closed", () => {
   // if (process.platform !== 'darwin') {
   //   app.quit();
   // }
+});
+
+powerMonitor.on('resume', () => {
+  app.relaunch();
+  app.exit();
+});
+
+powerMonitor.on('shutdown', () => {
+  logger.info("shutdown initiated, quitting...");
+  app.quit();
 });
 
 ipcMain.on("get-instances", (event) => {
