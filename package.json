@@ -53,6 +53,9 @@
         "LSUIElement": true
       }
     },
+    "win": {
+      "icon": "./build/iconwin.png"
+    },
     "linux": {
       "category": "public.app-category.productivity",
       "executableName": "Home Assistant Desktop",

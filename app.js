@@ -108,6 +108,13 @@ async function availabilityCheck() {
           }
       }
   } catch (error) {
+    if (error.message.includes('ERR_NETWORK_IO_SUSPENDED')) {
+      logger.error("System restored from sleep, re-initializing app...");
+      app.relaunch();
+      app.exit();
+    }
+    if (error.message.includes('ERR_NETWORK_CHANGED')) {
+    }
       logger.error('Error during availability check:', error);
   }
 }
@@ -155,7 +162,14 @@ async function retryAvailabilityCheck() {
               await reinitMainWindow();
           }
       } catch (error) {
-          logger.error('Error during availability check:', error);
+        if (error.message.includes('ERR_NETWORK_IO_SUSPENDED')) {
+          /*Loop risk but I think this is safe as NETWORK_IO_SUSPENDED 
+          always appears to relate specifically to sleep state*/
+          logger.error("Network interrupted during reconnection attempt, restarting...");
+          app.relaunch();
+          app.exit();
+        }
+          logger.error('Error trying to reconnect:', error);
           retryData = "Connection to instance failed.";
           mainWindow.webContents.send('retry-error', retryData);
       }
