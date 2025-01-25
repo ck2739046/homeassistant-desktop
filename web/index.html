@@ -11,6 +11,18 @@
       const Bonjour = require("bonjour-service");
       const bonjour = new Bonjour.Bonjour();
 
+      ipcRenderer.send("get-ha-instance");
+
+      let showCheckmark = false;
+
+      ipcRenderer.on("receive-ha-instance", function (event, url) {
+        if (showCheckmark) {
+          document.getElementById("check-wrapper").addEventListener("animationend", () => (window.location.href = url));
+        } else {
+          window.location.href = url;
+        }
+      });
+
       function showInstance(url) {
         if (url === "") {
           return;
@@ -29,7 +41,7 @@
       });
 
       ipcRenderer.send("get-instances");
-      ipcRenderer.on("get-instances", (event, result) => {
+      ipcRenderer.on("receive-instances", (event, result) => {
         let instances = result;
 
         bonjour.find({ type: "home-assistant" }, (instance) => {
@@ -54,20 +66,8 @@
         document.getElementById("check-wrapper").style.display = "block";
         document.getElementById("url-wrapper").style.display = "none";
         showCheckmark = true;
-        ipcRenderer.send("ha-instance", urlField.value);
+        ipcRenderer.send("get-ha-instance", urlField.value);
       }
-
-      ipcRenderer.send("ha-instance");
-
-      let showCheckmark = false;
-
-      ipcRenderer.on("ha-instance", function (event, url) {
-        if (showCheckmark) {
-          document.getElementById("check-wrapper").addEventListener("animationend", () => (window.location.href = url));
-        } else {
-          window.location.href = url;
-        }
-      });
 
       function isValidUrl(string) {
         try {

@@ -5,6 +5,8 @@ import Bonjour from "bonjour-service";
 import logger from "electron-log";
 import config  from "./config.js";
 import semver from "semver";
+import http from 'http';
+import https from 'https';
 const bonjour = new Bonjour.Bonjour();
 //scaling options for different app versions
 //app.commandLine.appendSwitch('high-dpi-support', 'true');
@@ -108,31 +110,20 @@ async function availabilityCheck() {
           }
       }
   } catch (error) {
-    if (error.message.includes('ERR_NETWORK_IO_SUSPENDED')) {
-      logger.error("System restored from sleep, re-initializing app...");
-      app.relaunch();
-      app.exit();
-    }
-    if (error.message.includes('ERR_NETWORK_CHANGED')) {
-    }
-      logger.error('Error during availability check:', error);
+    logger.error("Error during availability check:", error);
   }
 }
 
 async function getResponse(instance) {
   return new Promise((resolve, reject) => {
       const url = new URL(instance);
-      const request = net.request(`${url.origin}/auth/providers`);
-
-      request.on("response", (response) => {
-          const statusCode = response.statusCode;
+      const request = (url.protocol === 'https:' ? https : http).request(`${url.origin}/auth/providers`, (res) => {
+          const statusCode = res.statusCode;
           resolve(statusCode);
       });
-
       request.on("error", (error) => {
           reject(error);
       });
-
       request.end();
   });
 }
@@ -162,13 +153,6 @@ async function retryAvailabilityCheck() {
               await reinitMainWindow();
           }
       } catch (error) {
-        if (error.message.includes('ERR_NETWORK_IO_SUSPENDED')) {
-          /*Loop risk but I think this is safe as NETWORK_IO_SUSPENDED 
-          always appears to relate specifically to sleep state*/
-          logger.error("Network interrupted during reconnection attempt, restarting...");
-          app.relaunch();
-          app.exit();
-        }
           logger.error('Error trying to reconnect:', error);
           retryData = "Connection to instance failed.";
           mainWindow.webContents.send('retry-error', retryData);
@@ -876,6 +860,7 @@ app.on("window-all-closed", () => {
 });
 
 powerMonitor.on('resume', () => {
+  logger.info("Power state resumed, re-launching...");
   app.relaunch();
   app.exit();
 });
@@ -886,16 +871,16 @@ powerMonitor.on('shutdown', () => {
 });
 
 ipcMain.on("get-instances", (event) => {
-  event.reply("get-instances", config.get("allInstances") || []);
+  event.reply("receive-instances", config.get("allInstances") || []);
 });
 
-ipcMain.on("ha-instance", (event, url) => {
+ipcMain.on("get-ha-instance", (event, url) => {
   if (url) {
     addInstance(url);
   }
 
   if (currentInstance()) {
-    event.reply("ha-instance", currentInstance());
+    event.reply("receive-ha-instance", currentInstance());
   }
 });
 
