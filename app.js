@@ -26,6 +26,7 @@ const autoLauncher = new AutoLaunch({ name: "Home Assistant Desktop" });
 const __dirname = import.meta.dirname;
 const indexFile = `file://${__dirname}/web/index.html`;
 const errorFile = `file://${__dirname}/web/error.html`;
+const sleepFile = `file://${__dirname}/web/sleeping.html`;
 
 let initialized = false;
 let autostartEnabled = false;
@@ -857,6 +858,11 @@ app.on("window-all-closed", () => {
   // if (process.platform !== 'darwin') {
   //   app.quit();
   // }
+});
+
+powerMonitor.on('suspend', () => {
+  logger.info("Home Assistant going to sleep.");
+  mainWindow.loadURL(sleepFile);
 });
 
 powerMonitor.on('resume', () => {
