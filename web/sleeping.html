@@ -1,87 +1,89 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <title>Home Assistant</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="assets/style.css" rel="stylesheet" />
-    <link href="assets/sleeping.css" rel="stylesheet" />
-    <title>Sleeping</title>
-    <script>
-        function restart() {
-            ipcRenderer.send("restart");
-        }
-    </script>
-</head>
-<body>
-    <div class="vertical-center">
-        <div class="content">
-            <div class="center1">
-                <svg width="800px" height="100px" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path class="path z1" d="M7 6H24.1429L7 24H25" stroke="#000000" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path class="path z2" d="M29 15H41L29 29H41" stroke="#000000" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path class="path z3" d="M15 32H24.0476L15 42H25" stroke="#000000" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-            </div>
-            <div class="center1">
-                <svg xmlns="http://www.w3.org/2000/svg" width="120px" height="120px" viewBox="0 0 120 120">
-                    <path id="HASSIO"
-                        fill="none" stroke="black" stroke-width="2"
-                        d="M 114.70,54.58
-                           C 114.70,54.58 65.30,5.19 65.30,5.19
-                             62.39,2.27 57.62,2.27 54.70,5.19
-                             54.70,5.19 5.30,54.58 5.30,54.58
-                             2.39,57.49 0.00,63.26 0.00,67.38
-                             0.00,67.38 0.00,112.38 0.00,112.38
-                             0.00,116.51 3.38,119.88 7.50,119.88
-                             7.50,119.88 53.63,119.88 53.63,119.88
-                             53.63,119.88 33.32,99.57 33.32,99.57
-                             32.27,99.93 31.16,100.13 30.00,100.13
-                             24.35,100.13 19.75,95.53 19.75,89.88
-                             19.75,84.23 24.35,79.63 30.00,79.63
-                             35.65,79.63 40.25,84.23 40.25,89.88
-                             40.25,91.05 40.05,92.16 39.68,93.21
-                             39.68,93.21 55.50,109.02 55.50,109.02
-                             55.50,109.02 55.50,51.08 55.50,51.08
-                             52.10,49.41 49.75,45.92 49.75,41.89
-                             49.75,36.24 54.35,31.64 60.00,31.64
-                             65.65,31.64 70.25,36.24 70.25,41.89
-                             70.25,45.92 67.90,49.41 64.50,51.08
-                             64.50,51.08 64.50,91.72 64.50,91.72
-                             64.50,91.72 80.23,75.99 80.23,75.99
-                             79.92,75.01 79.75,73.97 79.75,72.89
-                             79.75,67.24 84.35,62.64 90.00,62.64
-                             95.65,62.64 100.25,67.24 100.25,72.89
-                             100.25,78.54 95.65,83.14 90.00,83.14
-                             88.75,83.14 87.56,82.90 86.45,82.49
-                             86.45,82.49 64.50,104.45 64.50,104.45
-                             64.50,104.45 64.50,119.89 64.50,119.89
-                             64.50,119.89 112.50,119.89 112.50,119.89
-                             116.62,119.89 120.00,116.51 120.00,112.39
-                             120.00,112.39 120.00,67.39 120.00,67.39
-                             120.00,63.26 117.61,57.50 114.70,54.58
-                             114.70,54.58 114.70,54.58 114.70,54.58 Z
-                            M 120.00,112.38
-                            C 120.00,116.51 116.62,119.88 112.50,119.88
-                             112.50,119.88 7.50,119.88 7.50,119.88
-                             3.38,119.88 0.00,116.51 0.00,112.38
-                             0.00,112.38 0.00,67.38 0.00,67.38
-                             0.00,63.26 2.39,57.50 5.30,54.58
-                             5.30,54.58 54.70,5.19 54.70,5.19
-                             57.61,2.27 62.38,2.27 65.30,5.19
-                             65.30,5.19 114.70,54.58 114.70,54.58
-                             117.61,57.50 120.00,63.26 120.00,67.39
-                             120.00,67.39 120.00,112.39 120.00,112.39
-                             120.00,112.39 120.00,112.38 120.00,112.38 Z" />
-                </svg>
-            </div>
-            <div class="center">
-                <p class="loading-info">Home Assistant is sleeping.</p>
-            </div>
-            <div class="center">
-                <button class="pure-material-button-contained" onclick="restart()" style="margin-left: 10px">Restart</button>
+    <head>
+        <title>Home Assistant</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href="assets/style.css" rel="stylesheet" />
+        <link href="assets/sleeping.css" rel="stylesheet" />
+        <title>Sleeping</title>
+        <script>
+            const { ipcRenderer } = require("electron");
+
+            function restart() {
+                ipcRenderer.send("restart");
+            }
+        </script>
+    </head>
+    <body>
+        <div class="vertical-center">
+            <div class="content">
+                <div class="center1">
+                    <svg width="800px" height="100px" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path class="path z1" d="M7 6H24.1429L7 24H25" stroke="#000000" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path class="path z2" d="M29 15H41L29 29H41" stroke="#000000" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path class="path z3" d="M15 32H24.0476L15 42H25" stroke="#000000" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <div class="center1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="120px" height="120px" viewBox="0 0 120 120">
+                        <path id="HASSIO"
+                            fill="none" stroke="black" stroke-width="2"
+                            d="M 114.70,54.58
+                               C 114.70,54.58 65.30,5.19 65.30,5.19
+                                 62.39,2.27 57.62,2.27 54.70,5.19
+                                 54.70,5.19 5.30,54.58 5.30,54.58
+                                 2.39,57.49 0.00,63.26 0.00,67.38
+                                 0.00,67.38 0.00,112.38 0.00,112.38
+                                 0.00,116.51 3.38,119.88 7.50,119.88
+                                 7.50,119.88 53.63,119.88 53.63,119.88
+                                 53.63,119.88 33.32,99.57 33.32,99.57
+                                 32.27,99.93 31.16,100.13 30.00,100.13
+                                 24.35,100.13 19.75,95.53 19.75,89.88
+                                 19.75,84.23 24.35,79.63 30.00,79.63
+                                 35.65,79.63 40.25,84.23 40.25,89.88
+                                 40.25,91.05 40.05,92.16 39.68,93.21
+                                 39.68,93.21 55.50,109.02 55.50,109.02
+                                 55.50,109.02 55.50,51.08 55.50,51.08
+                                 52.10,49.41 49.75,45.92 49.75,41.89
+                                 49.75,36.24 54.35,31.64 60.00,31.64
+                                 65.65,31.64 70.25,36.24 70.25,41.89
+                                 70.25,45.92 67.90,49.41 64.50,51.08
+                                 64.50,51.08 64.50,91.72 64.50,91.72
+                                 64.50,91.72 80.23,75.99 80.23,75.99
+                                 79.92,75.01 79.75,73.97 79.75,72.89
+                                 79.75,67.24 84.35,62.64 90.00,62.64
+                                 95.65,62.64 100.25,67.24 100.25,72.89
+                                 100.25,78.54 95.65,83.14 90.00,83.14
+                                 88.75,83.14 87.56,82.90 86.45,82.49
+                                 86.45,82.49 64.50,104.45 64.50,104.45
+                                 64.50,104.45 64.50,119.89 64.50,119.89
+                                 64.50,119.89 112.50,119.89 112.50,119.89
+                                 116.62,119.89 120.00,116.51 120.00,112.39
+                                 120.00,112.39 120.00,67.39 120.00,67.39
+                                 120.00,63.26 117.61,57.50 114.70,54.58
+                                 114.70,54.58 114.70,54.58 114.70,54.58 Z
+                                M 120.00,112.38
+                                C 120.00,116.51 116.62,119.88 112.50,119.88
+                                 112.50,119.88 7.50,119.88 7.50,119.88
+                                 3.38,119.88 0.00,116.51 0.00,112.38
+                                 0.00,112.38 0.00,67.38 0.00,67.38
+                                 0.00,63.26 2.39,57.50 5.30,54.58
+                                 5.30,54.58 54.70,5.19 54.70,5.19
+                                 57.61,2.27 62.38,2.27 65.30,5.19
+                                 65.30,5.19 114.70,54.58 114.70,54.58
+                                 117.61,57.50 120.00,63.26 120.00,67.39
+                                 120.00,67.39 120.00,112.39 120.00,112.39
+                                 120.00,112.39 120.00,112.38 120.00,112.38 Z" />
+                    </svg>
+                </div>
+                <div class="center">
+                    <p class="loading-info">Home Assistant is sleeping.</p>
+                </div>
+                <div class="center">
+                    <button class="pure-material-button-contained" onclick="restart()" style="margin-left: 10px">Restart</button>
+                </div>
             </div>
         </div>
-    </div>
-</body>
+    </body>
 </html>
