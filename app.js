@@ -809,8 +809,36 @@ async function showError(isError) {
   }
 }
 
+let sleepHandled = false;
+let resumeHandled = false;
+
+powerMonitor.on('suspend', () => {
+  if (!sleepHandled) {
+    logger.info("Home Assistant going to sleep.");
+    mainWindow.loadURL(sleepFile);
+    sleepHandled = true;
+  }
+});
+
+powerMonitor.on('resume', () => {
+  if (!resumeHandled) {
+    logger.info("Power state resumed, re-launching...");
+    app.relaunch();
+    app.exit();
+    resumeHandled = true;
+  }
+});
+
+powerMonitor.on('shutdown', () => {
+  logger.info("shutdown initiated, quitting...");
+  app.quit();
+});
+
+
 app.whenReady().then(async () => {
   checkAutoStart();
+  sleepHandled = false;
+  resumeHandled = false;
 
   await createMainWindow(!config.has("currentInstance"));
 
@@ -858,22 +886,6 @@ app.on("window-all-closed", () => {
   // if (process.platform !== 'darwin') {
   //   app.quit();
   // }
-});
-
-powerMonitor.on('suspend', () => {
-  logger.info("Home Assistant going to sleep.");
-  mainWindow.loadURL(sleepFile);
-});
-
-powerMonitor.on('resume', () => {
-  logger.info("Power state resumed, re-launching...");
-  app.relaunch();
-  app.exit();
-});
-
-powerMonitor.on('shutdown', () => {
-  logger.info("shutdown initiated, quitting...");
-  app.quit();
 });
 
 ipcMain.on("get-instances", (event) => {
