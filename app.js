@@ -7,6 +7,7 @@ import config  from "./config.js";
 import semver from "semver";
 import http from 'http';
 import https from 'https';
+import winston from 'winston';
 const bonjour = new Bonjour.Bonjour();
 //scaling options for different app versions
 //app.commandLine.appendSwitch('high-dpi-support', 'true');
@@ -547,7 +548,7 @@ async function createMainWindow(show = false) {
     },
   });
 
-  // mainWindow.webContents.openDevTools();
+  //mainWindow.webContents.openDevTools();
   try {
     await mainWindow.loadURL(indexFile);
   } catch (error) {
@@ -555,6 +556,14 @@ async function createMainWindow(show = false) {
   }
 
   createTray();
+
+  mainWindow.webContents.on('render-process-gone', (event, detailed) => {
+    logger.info("Renderer dead, reason: " + detailed.reason);
+    if (detailed.reason === 'crashed') {
+        mainWindow.webContents.reload();
+        logger.info("Renderer rebooted successfully.");
+     }
+  });
 
   // open external links in default browser
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
@@ -834,48 +843,61 @@ powerMonitor.on('shutdown', () => {
   app.quit();
 });
 
-app.whenReady().then(async () => {
-  checkAutoStart();
-  sleepHandled = false;
-  resumeHandled = false;
+const gotTheLock = app.requestSingleInstanceLock();
 
-  await createMainWindow(!config.has("currentInstance"));
+if (!gotTheLock) {
+  app.quit();
+} else {
+  app.on('second-instance', (event, commandLine, workingDirectory) => {
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.focus();
+    }
+  });
+}
 
-    // update check on startup if enabled
-  if (config.get("autoUpdate") === true) {
-    checkForUpdates();
-  }
+  app.whenReady().then(async () => {
+    checkAutoStart();
+    sleepHandled = false;
+    resumeHandled = false;
 
-  if (process.platform === "linux") {
-    tray.setContextMenu(getMenu());
-  }
+    await createMainWindow(!config.has("currentInstance"));
 
-  if (!availabilityCheckerInterval) {
-    logger.info("Initialized availability check");
-    availabilityCheckerInterval = setInterval(availabilityCheck, 3000);
-  }
+      // update check on startup if enabled
+    if (config.get("autoUpdate") === true) {
+      checkForUpdates();
+    }
 
-  // register shortcut
-  if (config.get("shortcutEnabled")) {
-    registerKeyboardShortcut();
-  }
+    if (process.platform === "linux") {
+      tray.setContextMenu(getMenu());
+    }
 
-  if (config.get("shortcutFullscreenEnabled")) {
-    globalShortcut.register("CommandOrControl+Alt+Return", () => {
-      toggleFullScreen();
-    });
-  }
+    if (!availabilityCheckerInterval) {
+      logger.info("Initialized availability check");
+      availabilityCheckerInterval = setInterval(availabilityCheck, 3000);
+    }
 
-  // disable hover for first start
-  if (!config.has("currentInstance")) {
-    config.set("disableHover", true);
-  }
+    // register shortcut
+    if (config.get("shortcutEnabled")) {
+      registerKeyboardShortcut();
+    }
 
-  // enable auto update by default
-  if (!config.has("autoUpdate")) {
-    config.set("autoUpdate", true);
-  }
-});
+    if (config.get("shortcutFullscreenEnabled")) {
+      globalShortcut.register("CommandOrControl+Alt+Return", () => {
+        toggleFullScreen();
+      });
+    }
+
+    // disable hover for first start
+    if (!config.has("currentInstance")) {
+      config.set("disableHover", true);
+    }
+
+    // enable auto update by default
+    if (!config.has("autoUpdate")) {
+      config.set("autoUpdate", true);
+    }
+  });
 
 app.on("will-quit", () => {
   unregisterKeyboardShortcut();
