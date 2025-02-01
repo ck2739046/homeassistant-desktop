@@ -834,7 +834,6 @@ powerMonitor.on('shutdown', () => {
   app.quit();
 });
 
-
 app.whenReady().then(async () => {
   checkAutoStart();
   sleepHandled = false;
