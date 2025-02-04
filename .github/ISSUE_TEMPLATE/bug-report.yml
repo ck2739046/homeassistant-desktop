@@ -17,14 +17,14 @@ body:
     validations:
       required: true
   - type: input
-    id: version
+    id: appversion
     attributes:
       label: Which OS version are you running? 
       placeholder: Windows 11 22H2 | Linux Mint (6.13.1) | MacOS Sequoia 15.2
     validations:
       required: true
   - type: input
-    id: version
+    id: osversion
     attributes:
       label: Which version of Home Assistant Desktop does this issue occur with?
       placeholder: "1.6.4"
@@ -38,7 +38,7 @@ body:
     validations:
       required: true
   - type: dropdown
-    id: assign
+    id: betatest
     attributes:
       label: Are you willing to beta test?
       options:
