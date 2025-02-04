@@ -1,0 +1,15 @@
+name: Other Issue
+description: Anything else!
+labels: ["other"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this issue to discuss any other aspect of the project!
+  - type: textarea
+    id: description
+    attributes:
+      label: What's on your mind?
+      placeholder: I am telling you right now.
+    validations:
+      required: true

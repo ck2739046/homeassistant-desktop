@@ -1,0 +1,49 @@
+name: Bug Report
+description: Report a bug!
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please fill out the sections below to assist in resolving your issue.
+  - type: dropdown
+    id: system
+    attributes:
+      label: "Which system are you reporting a bug for?"
+      options:
+        - "Windows"
+        - "Mac"
+        - "Linux"
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Which OS version are you running? 
+      placeholder: Windows 11 22H2 | Linux Mint (6.13.1) | MacOS Sequoia 15.2
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Which version of Home Assistant Desktop does this issue occur with?
+      placeholder: "1.6.4"
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Please describe your issue, include logs if applicable.
+      placeholder: I clicked on this button, and the app crashed, here are the logs.
+    validations:
+      required: true
+  - type: dropdown
+    id: assign
+    attributes:
+      label: Are you willing to beta test?
+      options:
+        - "Yes"
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting this issue! We will get back to you as soon as possible.
