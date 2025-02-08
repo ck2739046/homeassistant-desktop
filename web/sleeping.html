@@ -8,10 +8,8 @@
         <link href="assets/sleeping.css" rel="stylesheet" />
         <title>Sleeping</title>
         <script>
-            const { ipcRenderer } = require("electron");
-
             function restart() {
-                ipcRenderer.send("restart");
+                window.electron.restart();
             }
         </script>
     </head>

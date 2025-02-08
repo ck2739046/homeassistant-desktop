@@ -7,15 +7,12 @@
     <link href="assets/style.css" rel="stylesheet" />
     <link href="assets/checkmark.css" rel="stylesheet" />
     <script>
-      const { ipcRenderer } = require("electron");
-      const Bonjour = require("bonjour-service");
-      const bonjour = new Bonjour.Bonjour();
 
-      ipcRenderer.send("get-ha-instance");
+      window.electron.getHaInstance();
 
       let showCheckmark = false;
 
-      ipcRenderer.on("receive-ha-instance", function (event, url) {
+      window.electron.onReceiveHaInstance((url) => {
         if (showCheckmark) {
           document.getElementById("check-wrapper").addEventListener("animationend", () => (window.location.href = url));
         } else {
@@ -40,18 +37,11 @@
         setTimeout(() => document.getElementById("url").focus(), 300);
       });
 
-      ipcRenderer.send("get-instances");
-      ipcRenderer.on("receive-instances", (event, result) => {
+      window.electron.getInstances();
+      window.electron.onReceiveInstances((result) => {
         let instances = result;
-
-        bonjour.find({ type: "home-assistant" }, (instance) => {
-          if (instance.txt.internal_url && instances.indexOf(instance.txt.internal_url) === -1) {
-            showInstance(instance.txt.internal_url);
-          }
-
-          if (instance.txt.external_url && instances.indexOf(instance.txt.external_url) === -1) {
-            showInstance(instance.txt.external_url);
-          }
+        instances.forEach((url) => {
+          showInstance(url);
         });
       });
 
@@ -66,7 +56,8 @@
         document.getElementById("check-wrapper").style.display = "block";
         document.getElementById("url-wrapper").style.display = "none";
         showCheckmark = true;
-        ipcRenderer.send("get-ha-instance", urlField.value);
+        const url = urlField.value;
+        window.electron.sendHaInstance(url);
       }
 
       function isValidUrl(string) {

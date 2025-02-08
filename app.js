@@ -8,6 +8,7 @@ import semver from "semver";
 import http from 'http';
 import https from 'https';
 import winston from 'winston';
+import path from 'path';
 const bonjour = new Bonjour.Bonjour();
 //scaling options for different app versions
 //app.commandLine.appendSwitch('high-dpi-support', 'true');
@@ -17,7 +18,6 @@ logger.errorHandler.startCatching();
 logger.info(`${app.name} started`);
 logger.info(`Platform: ${process.platform} ${process.arch}`);
 
-// hide dock icon on macOS
 if (process.platform === "darwin") {
   app.dock.hide();
 }
@@ -205,7 +205,7 @@ function changePosition() {
   }
 }
 
-function checkForAvailableInstance() {
+async function checkForAvailableInstance() {
   const instances = config.get("allInstances");
 
   if (instances?.length > 1) {
@@ -220,22 +220,34 @@ function checkForAvailableInstance() {
     });
     let found;
     for (const instance of instances.filter((e) => e.url !== currentInstance())) {
-      const url = new URL(instance);
-      const request = net.request(`${url.origin}/auth/providers`);
-      request.on("response", (response) => {
-        if (response.statusCode === 200) {
-          found = instance;
-        }
-      });
-      request.on("error", (_) => {});
-      request.end();
-
+      const statusCode = await getResponse(instance);
+      if (statusCode === 200) {
+        found = instance;
+      };
       if (found) {
         currentInstance(found);
         break;
       }
     }
   }
+}
+
+async function getBonjourResult(instances) {
+  return new Promise((resolve) => {
+    const foundInstances = [];
+    
+    bonjour.find({ type: "home-assistant" }, (instance) => {
+      if (instance.txt.internal_url && instances.indexOf(instance.txt.internal_url) === -1) {
+        foundInstances.push(instance.txt.internal_url);
+      }
+      if (instance.txt.external_url && instances.indexOf(instance.txt.external_url) === -1) {
+        foundInstances.push(instance.txt.external_url);
+      }
+    });
+    setTimeout(() => {
+      resolve(foundInstances);
+    }, 1500);
+  });
 }
 
 function getMenu() {
@@ -543,8 +555,9 @@ async function createMainWindow(show = false) {
     autoHideMenuBar: true,
     frame: config.get("detachedMode") && process.platform !== "darwin",
     webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false,
+      nodeIntegration: false,
+      contextIsolation: true,
+      preload: path.join(__dirname, 'web', 'preload.cjs'),
     },
   });
 
@@ -565,13 +578,11 @@ async function createMainWindow(show = false) {
      }
   });
 
-  // open external links in default browser
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url);
     return { action: "deny" };
   });
 
-  // hide scrollbar
   mainWindow.webContents.on("did-finish-load", async function () {
     await mainWindow.webContents.insertCSS("::-webkit-scrollbar { display: none; } body { -webkit-user-select: none; }");
 
@@ -602,7 +613,7 @@ async function createMainWindow(show = false) {
   }
 
   mainWindow.on("resize", (e) => {
-    // ignore resize event when using fullscreen mode
+
     if (mainWindow.isFullScreen()) {
       return e;
     }
@@ -677,10 +688,10 @@ function showWindow() {
   }
 
   if (!mainWindow.isVisible()) {
-    mainWindow.setVisibleOnAllWorkspaces(true); // put the window on all screens
+    mainWindow.setVisibleOnAllWorkspaces(true);
     mainWindow.show();
     mainWindow.focus();
-    mainWindow.setVisibleOnAllWorkspaces(false); // disable all screen behavior
+    mainWindow.setVisibleOnAllWorkspaces(false);
     mainWindow.setSkipTaskbar(!config.get("detachedMode"));
   }
 }
@@ -798,7 +809,6 @@ function addInstance(url) {
     return;
   }
 
-  // active hover by default after adding first instance
   if (!instances.length) {
     config.set("disableHover", false);
   }
@@ -863,7 +873,6 @@ if (!gotTheLock) {
 
     await createMainWindow(!config.has("currentInstance"));
 
-      // update check on startup if enabled
     if (config.get("autoUpdate") === true) {
       checkForUpdates();
     }
@@ -877,7 +886,6 @@ if (!gotTheLock) {
       availabilityCheckerInterval = setInterval(availabilityCheck, 3000);
     }
 
-    // register shortcut
     if (config.get("shortcutEnabled")) {
       registerKeyboardShortcut();
     }
@@ -888,12 +896,10 @@ if (!gotTheLock) {
       });
     }
 
-    // disable hover for first start
     if (!config.has("currentInstance")) {
       config.set("disableHover", true);
     }
 
-    // enable auto update by default
     if (!config.has("autoUpdate")) {
       config.set("autoUpdate", true);
     }
@@ -909,8 +915,9 @@ app.on("window-all-closed", () => {
   // }
 });
 
-ipcMain.on("get-instances", (event) => {
-  event.reply("receive-instances", config.get("allInstances") || []);
+ipcMain.on("get-instances", async (event) => {
+  const instances = await getBonjourResult(config.get("allInstances") || []);
+  event.reply("receive-instances", instances);
 });
 
 ipcMain.on("get-ha-instance", (event, url) => {
