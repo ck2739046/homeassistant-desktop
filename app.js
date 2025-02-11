@@ -835,13 +835,33 @@ powerMonitor.on('suspend', () => {
   if (!sleepHandled) {
     logger.info("Home Assistant going to sleep.");
     mainWindow.loadURL(sleepFile);
+    clearInterval(availabilityCheckerInterval);
+    availabilityCheckerInterval = null;
     sleepHandled = true;
   }
 });
 
-powerMonitor.on('resume', () => {
+powerMonitor.on('resume', async () => {
   if (!resumeHandled) {
     logger.info("Power state resumed, re-launching...");
+    const instance = currentInstance();
+    const maxRetries = 2;
+    let attempts = 0;
+
+    while (attempts < maxRetries) {
+      try {
+        const statusCode = await getResponse(instance);
+        if (statusCode === 200) {
+          app.relaunch();
+          app.exit();
+          return;
+        }
+      } catch (error) {
+      }
+      attempts++;
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    logger.error("Network wasn't ready, retrying...");
     app.relaunch();
     app.exit();
     resumeHandled = true;
@@ -850,6 +870,8 @@ powerMonitor.on('resume', () => {
 
 powerMonitor.on('shutdown', () => {
   logger.info("shutdown initiated, quitting...");
+  clearInterval(availabilityCheckerInterval);
+  availabilityCheckerInterval = null;
   app.quit();
 });
 

@@ -40,8 +40,8 @@ Pull requests are welcome. For major changes, please open an issue first to disc
 
 ## License and Author
 
-Copyright 2024, [Dusty Armstrong](https://github.com/DustyArmstrong)\
-Copyright 2022, [Ivan Prodanov](https://github.com/iprodanovbg)\
+Copyright 2024-2025, [Dusty Armstrong](https://github.com/DustyArmstrong)\
+Copyright 2022-2023, [Ivan Prodanov](https://github.com/iprodanovbg)\
 Copyright 2020-2021, [Marvin Kelm](https://github.com/mrvnklm)
 
 Licensed under the Apache License, Version 2.0 (the "License");
