@@ -1,4 +1,4 @@
-import { app, dialog, ipcMain, shell, globalShortcut, screen, net, Menu, Tray, BrowserWindow, powerMonitor } from "electron";
+import { app, dialog, ipcMain, shell, globalShortcut, screen, Menu, Tray, BrowserWindow, powerMonitor } from "electron";
 import AutoLaunch from "auto-launch";
 import Positioner from "electron-traywindow-positioner";
 import Bonjour from "bonjour-service";
@@ -420,6 +420,40 @@ function getMenu() {
       ]
     },
     {
+      label: "Appearance",
+      submenu: [
+        {
+          label: "Tray Icon",
+          submenu: [
+            {
+              label: "White",
+              type: "radio",
+              checked: config.get("userTrayIcon") === (process.platform === 'darwin' ? "IconTemplate.png" : "IconWin.png"),
+              click: () => {
+                if (process.platform === 'darwin') {
+                  changeIcon("IconTemplate.png");
+                } else {
+                  changeIcon("IconWin.png");
+                }
+              }
+            },
+            {
+              label: "Blue",
+              type: "radio",
+              checked: config.get("userTrayIcon") === "IconWinAlt.png",
+              click: () => changeIcon("IconWinAlt.png"),
+            },
+            {
+              label: "Black",
+              type: "radio",
+              checked: config.get("userTrayIcon") === "IconWinBlack.png",
+              click: () => changeIcon("IconWinBlack.png"),
+            },
+          ]
+        }
+      ]
+    },
+    {
       type: "separator",
     },
     {
@@ -571,7 +605,7 @@ async function createMainWindow(show = false) {
   createTray();
 
   mainWindow.webContents.on('render-process-gone', (event, detailed) => {
-    logger.info("Renderer dead, reason: " + detailed.reason);
+    logger.error("Renderer dead, reason: " + detailed.reason);
     if (detailed.reason === 'crashed') {
         mainWindow.webContents.reload();
         logger.info("Renderer rebooted successfully.");
@@ -589,9 +623,6 @@ async function createMainWindow(show = false) {
     if (config.get("detachedMode") && process.platform === "darwin") {
       await mainWindow.webContents.insertCSS("body { -webkit-app-region: drag; }");
     }
-
-    // let code = `document.addEventListener('mousemove', () => { ipcRenderer.send('mousemove'); });`;
-    // mainWindow.webContents.executeJavaScript(code);
   });
 
   if (config.get("detachedMode")) {
@@ -702,8 +733,9 @@ function createTray() {
   }
 
   logger.info("Initialized Tray menu");
+  const iconName = config.get("userTrayIcon");
   tray = new Tray(
-    ["win32", "linux"].includes(process.platform) ? `${__dirname}/assets/IconWin.png` : `${__dirname}/assets/IconTemplate.png`
+    ["win32", "linux"].includes(process.platform) ? `${__dirname}/assets/${iconName}` : `${__dirname}/assets/${iconName}`
   );
 
   tray.on("click", () => {
@@ -753,6 +785,14 @@ function createTray() {
       }
     }, 100);
   });
+}
+
+function changeIcon(iconName) {
+  config.set("userTrayIcon", iconName);
+  tray.setImage(
+    ["win32", "linux"].includes(process.platform) ? `${__dirname}/assets/${iconName}` : `${__dirname}/assets/${iconName}`
+  );
+  logger.info(`Changed tray icon to ${iconName}`);
 }
 
 function setWindowFocusTimer() {
@@ -856,7 +896,7 @@ powerMonitor.on('resume', async () => {
           app.exit();
           return;
         }
-      } catch (error) {
+      } catch {
       }
       attempts++;
       await new Promise(resolve => setTimeout(resolve, 100));
@@ -880,7 +920,7 @@ const gotTheLock = app.requestSingleInstanceLock();
 if (!gotTheLock) {
   app.quit();
 } else {
-  app.on('second-instance', (event, commandLine, workingDirectory) => {
+  app.on('second-instance', (_event, _commandLine, _workingDirectory) => {
     if (mainWindow) {
       if (mainWindow.isMinimized()) mainWindow.restore();
       mainWindow.focus();
