@@ -8,7 +8,7 @@ This project is fork from [iprodanovbg/homeassistant-desktop](https://github.com
 
 ## Project Status
 
-The status of the project with regards to its original maintainers is unknown - the original author ([mrvnklm](https://github.com/mrvnklm/)) has seemingly deleted their repository and the most well-developed version by [iprodanovbg](https://github.com/iprodanovbg/) has not had any meaningful updates since February 2023. Due to loss of functionality from aging dependencies I simply opted to fork the repository and make the necessary changes since I used the app every day, though it has since increased in scope. This project will be maintained so long as there is a need or desire to, so pull requests to improve or fix functionality are most welcome here.
+As of August 2025, the previous version of this project produced by [iprodanovbg](https://github.com/iprodanovbg/) has been archived. Given it is unlikely to return to active development, I will continue to maintain my own version here for as long as people wish to use it. The project is currently in a stable iteration, but I would like to leverage this/a future application to more tightly integrate with Home Assistant itself (device sensors etc.) when I have time. This is highly dependent on my availability, but contributions are welcome. 
 
 I hope this project can be of some use to others if you like/liked the app! Issues are open to submit if you have any, though please be aware I may not be able to resolve all issues quickly or comprehensively - I will do my best.
 
