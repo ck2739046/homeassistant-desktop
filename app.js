@@ -579,11 +579,18 @@ function getMenu() {
 
 async function createMainWindow(show = false) {
   logger.info("Initialized main window");
+
+  const w = 400;
+  const h = 500;
+
   mainWindow = new BrowserWindow({
-    width: 420,
-    height: 460,
-    minWidth: 420,
-    minHeight: 460,
+    width: w,
+    height: h,
+    minWidth: w,
+    minHeight: h,
+    maxWidth: w,
+    maxHeight: h,
+    resizable: false,
     show: false,
     skipTaskbar: !show,
     autoHideMenuBar: true,
