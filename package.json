@@ -56,7 +56,13 @@
       }
     },
     "win": {
-      "icon": "./build/iconwin.png"
+      "icon": "./build/iconwin.png",
+      "target": [
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ]
     },
     "linux": {
       "category": "public.app-category.productivity",
