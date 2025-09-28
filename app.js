@@ -590,7 +590,7 @@ async function createMainWindow(show = false) {
     minHeight: h,
     maxWidth: w,
     maxHeight: h,
-    resizable: false,
+    resizable: true,
     show: false,
     skipTaskbar: !show,
     autoHideMenuBar: true,
